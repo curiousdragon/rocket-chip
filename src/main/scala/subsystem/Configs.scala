@@ -10,6 +10,7 @@ import freechips.rocketchip.devices.tilelink._
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.rocket._
 import freechips.rocketchip.tile._
+import freechips.rocketchip.tilelink._
 import freechips.rocketchip.util._
 
 class BaseSubsystemConfig extends Config ((site, here, up) => {
@@ -42,7 +43,8 @@ class BaseSubsystemConfig extends Config ((site, here, up) => {
   case DebugModuleKey => Some(DefaultDebugModuleParams(site(XLen)))
   case CLINTKey => Some(CLINTParams())
   case PLICKey => Some(PLICParams())
-  case TilesLocated(InSubsystem) => 
+  case CoherenceKey => new MESICoherence()
+  case TilesLocated(InSubsystem) =>
     LegacyTileFieldHelper(site(RocketTilesKey), site(RocketCrossingKey), RocketTileAttachParams.apply _)
 })
 
@@ -361,7 +363,7 @@ class WithRationalRocketTiles extends Config((site, here, up) => {
 class WithEdgeDataBits(dataBits: Int) extends Config((site, here, up) => {
   case MemoryBusKey => up(MemoryBusKey, site).copy(beatBytes = dataBits/8)
   case ExtIn => up(ExtIn, site).map(_.copy(beatBytes = dataBits/8))
-  
+
 })
 
 class WithJtagDTM extends Config ((site, here, up) => {
@@ -513,4 +515,16 @@ class WithControlBusFrequency(freqMHz: Double) extends Config((site, here, up) =
 /** Under the default multi-bus topologies, this leaves bus ClockSinks undriven by the topology itself */
 class WithDontDriveBusClocksFromSBus extends Config((site, here, up) => {
   case DriveClocksFromSBus => false
+})
+
+class WithMESICoherence extends Config((site, here, up) => {
+  case CoherenceKey => new MESICoherence
+})
+
+class WithMSICoherence extends Config((site, here, up) => {
+  case CoherenceKey => new MSICoherence
+})
+
+class WithMICoherence extends Config((site, here, up) => {
+  case CoherenceKey => new MICoherence
 })
